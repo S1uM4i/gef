@@ -60,7 +60,7 @@ if [ -e "${GEF_PATH}" ]; then
     echo "[-] INSTALLATION FAILED"
     exit 1
 else
-    wget -q https://raw.githubusercontent.com/bata24/gef/dev/gef.py -O "${GEF_PATH}"
+    wget -q https://raw.githubusercontent.com/s1um4i/gef/dev/gef.py -O "${GEF_PATH}"
     if [ ! -s "${GEF_PATH}" ]; then
         echo "[-] Downloading ${GEF_PATH} failed."
         rm -f "${GEF_PATH}"

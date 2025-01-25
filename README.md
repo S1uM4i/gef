@@ -2,22 +2,24 @@
 ![](https://raw.githubusercontent.com/bata24/gef/dev/images/context.png)
 
 ## Table of Contents
-* [What is this?](#what-is-this)
-* [Setup](#setup)
-    * [Supported environment](#supported-environment)
-    * [Install](#install)
-    * [Upgrade](#upgrade)
-    * [Uninstall](#uninstall)
-    * [Dependency](#dependency)
-* [Added / improved features](#added--improved-features)
-    * [Supported mode](#supported-mode)
-    * [Qemu-system cooperation](#qemu-system-cooperation)
-    * [Qemu-user cooperation](#qemu-user-cooperation)
-    * [Heap dump features](#heap-dump-features)
-    * [Improved features](#improved-features)
-    * [Added features](#added-features)
-    * [Other](#other)
-* [FAQ](#faq)
+- [Image](#image)
+- [Table of Contents](#table-of-contents)
+- [What is this?](#what-is-this)
+- [Setup](#setup)
+  - [Supported environment](#supported-environment)
+  - [Install](#install)
+  - [Upgrade](#upgrade)
+  - [Uninstall](#uninstall)
+  - [Dependency](#dependency)
+- [Added / improved features](#added--improved-features)
+  - [Supported mode](#supported-mode)
+  - [Qemu-system cooperation](#qemu-system-cooperation)
+  - [Qemu-user cooperation](#qemu-user-cooperation)
+  - [Heap dump features](#heap-dump-features)
+  - [Improved features](#improved-features)
+  - [Added features](#added-features)
+  - [Other](#other)
+- [FAQ](#faq)
 
 ## What is this?
 This is a fork of [GEF](https://github.com/hugsy/gef) with 3 major improvements.
@@ -38,12 +40,13 @@ Many other commands have been added and improved. Enjoy!
 ### Install
 * Run following commands as root user.
     ```bash
-    # Ubuntu 23.04 or later restrict global installation of python packages with pip3.
-    # So you need --break-system-packages option.
-    wget -q https://raw.githubusercontent.com/bata24/gef/dev/install.sh -O- | sed -e 's/pip3 install/pip3 install --break-system-packages/g' | sh
-
-    # Ubuntu 22.10 or before
-    wget -q https://raw.githubusercontent.com/bata24/gef/dev/install.sh -O- | sh
+    git clone <repo>
+    # For normal installation
+    ./install.sh
+    # Install with venv
+    ./install-venv.sh
+    # Minimum installation
+    ./install-minimal.sh
     ```
 * Note
     * To simplify the installation script, GEF (`gef.py`) is installed to a fixed path (`/root/.gdbinit-gef.py`).

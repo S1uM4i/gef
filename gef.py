@@ -10651,6 +10651,22 @@ class GefTmuxSetup(gdb.Command):
         os.unlink(tty_path)
         return
 
+@register
+class V8DebugPrintObject(GenericCommand):
+    _cmdline_ = "job"
+    _syntax_ = f"{_cmdline_} tagged pointer"
+
+    def __int__(self) -> None:
+        super().__init__(self._cmdline_, gdb.COMMAND_SUPPORT, gdb.COMPLETE_NONE, False)
+        return
+
+    @only_if_gdb_running
+    @parse_arguments({"address": ""}, {})
+    def do_invoke(self, _: list[str], **kwargs: Any) -> None:
+        args : argparse.Namespace = kwargs["arguments"]
+        target = args.address
+        ret = gdb.execute(f"call (void)_v8_internal_Print_Object((void *)({target}))", to_string=True)
+        gef_print(ret)
 
 class GefInstallExtraScriptCommand(gdb.Command):
     """`gef install` command: installs one or more scripts from the `gef-extras` script repo. Note that the command

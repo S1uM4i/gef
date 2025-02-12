@@ -10697,6 +10697,38 @@ class V8TraceRootMap(GenericCommand):
                         return
                     target = next_map
 
+@register
+class V8PrintTransitionTree(GenericCommand):
+    _cmdline_ = "print-transition-tree"
+    _syntax_ = f"{_cmdline_} tagged pointer"
+
+    def __init__(self) -> None:
+        super().__init__(self._cmdline_, gdb.COMMAND_SUPPORT, gdb.COMPLETE_NONE, False)
+        return
+
+    def find_root_map(self, target: str) -> str:
+        input_map = target
+        while True:
+            ret = gdb.execute(f"call _v8_internal_Print_Object_To_String((void *)({target})).__r_.__value_.__l.__data_", to_string=True).split("\\n")
+            found = False
+            for line in ret:
+                if "back pointer" in line:
+                    l = line.split(" - back pointer: ")[1].split(" ")
+                    next_map = l[0]
+                    map_type = l[1]
+                    if 'undefined' in map_type:
+                        return target
+                    target = next_map
+    
+    @only_if_gdb_running
+    @parse_arguments({"address": ""}, {})
+    def do_invoke(self, _: list[str], **kwargs: Any) -> None:
+        args : argparse.Namespace = kwargs["arguments"]
+        target = args.address
+        root_map = self.find_root_map(target)
+        ret = gdb.execute(f"call (void)_v8_internal_Print_TransitionTree(((void *){root_map}))", to_string=True)
+        return
+
 class GefInstallExtraScriptCommand(gdb.Command):
     """`gef install` command: installs one or more scripts from the `gef-extras` script repo. Note that the command
     doesn't check for external dependencies the script(s) might require."""

@@ -10656,7 +10656,7 @@ class V8DebugPrintObject(GenericCommand):
     _cmdline_ = "job"
     _syntax_ = f"{_cmdline_} tagged pointer"
 
-    def __int__(self) -> None:
+    def __init__(self) -> None:
         super().__init__(self._cmdline_, gdb.COMMAND_SUPPORT, gdb.COMPLETE_NONE, False)
         return
 
@@ -10666,7 +10666,36 @@ class V8DebugPrintObject(GenericCommand):
         args : argparse.Namespace = kwargs["arguments"]
         target = args.address
         ret = gdb.execute(f"call (void)_v8_internal_Print_Object((void *)({target}))", to_string=True)
-        gef_print(ret)
+        return
+
+@register
+class V8TraceRootMap(GenericCommand):
+    _cmdline_ = "trace-root-map"
+    _syntax_ = f"{_cmdline_} tagged pointer"
+
+    def __init__(self) -> None:
+        super().__init__(self._cmdline_, gdb.COMMAND_SUPPORT, gdb.COMPLETE_NONE, False)
+        return
+
+    @only_if_gdb_running
+    @parse_arguments({"address": ""}, {})
+    def do_invoke(self, _: list[str], **kwargs: Any) -> None:
+        args : argparse.Namespace = kwargs["arguments"]
+        target = args.address
+        input_map = target
+        while True:
+            ret = gdb.execute(f"call _v8_internal_Print_Object_To_String((void *)({target})).__r_.__value_.__l.__data_", to_string=True).split("\\n")
+            found = False
+            for line in ret:
+                if "back pointer" in line:
+                    l = line.split(" - back pointer: ")[1].split(" ")
+                    next_map = l[0]
+                    map_type = l[1]
+                    gef_print("[*]  => {}: {}".format(next_map, map_type))
+                    if 'undefined' in map_type:
+                        gef_print("[+] Found root map for {}: {}".format(input_map, target))
+                        return
+                    target = next_map
 
 class GefInstallExtraScriptCommand(gdb.Command):
     """`gef install` command: installs one or more scripts from the `gef-extras` script repo. Note that the command

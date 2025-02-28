@@ -10729,6 +10729,33 @@ class V8PrintTransitionTree(GenericCommand):
         ret = gdb.execute(f"call (void)_v8_internal_Print_TransitionTree(((void *){root_map}))", to_string=True)
         return
 
+@register
+class ZendPageMap(GenericCommand):
+    _cmdline_ = "zpm"
+    _syntax_ = f"{_cmdline_} chunk pointer"
+
+    def __init__(self) -> None:
+        super().__init__(self._cmdline_, gdb.COMMAND_SUPPORT, gdb.COMPLETE_NONE, False)
+        return
+    
+    @only_if_gdb_running
+    @parse_arguments({"address": ""}, {})
+    def do_invoke(self, _: list[str], **kwargs: Any) -> None:
+        args : argparse.Namespace = kwargs["arguments"]
+        chunk_addr = parse_address(args.address)
+        # assume there will be 512 page per chunk
+        pagemap_addr = chunk_addr+0x1c8
+        for i in range(8):
+            pmap = u64(gef.memory.read(pagemap_addr + i * 8, 0x8))
+            freemap = ""
+            for j in range(64):
+                is_freed = pmap & (1 << j)
+                if is_freed:
+                    freemap += "1"
+                else:
+                    freemap += "0"
+            gef_print(freemap)
+
 class GefInstallExtraScriptCommand(gdb.Command):
     """`gef install` command: installs one or more scripts from the `gef-extras` script repo. Note that the command
     doesn't check for external dependencies the script(s) might require."""

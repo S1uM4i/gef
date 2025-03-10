@@ -10744,7 +10744,9 @@ class ZendPageMap(GenericCommand):
         args : argparse.Namespace = kwargs["arguments"]
         chunk_addr = parse_address(args.address)
         # assume there will be 512 page per chunk
-        pagemap_addr = chunk_addr+0x1c8
+        freemap_addr = parse_address("&((*alloc_globals.mm_heap).main_chunk)->free_map")
+        mainchunk_addr = parse_address("(*alloc_globals.mm_heap).main_chunk")
+        pagemap_addr = chunk_addr+(freemap_addr - mainchunk_addr)
         for i in range(8):
             pmap = u64(gef.memory.read(pagemap_addr + i * 8, 0x8))
             freemap = ""
@@ -10755,6 +10757,37 @@ class ZendPageMap(GenericCommand):
                 else:
                     freemap += "0"
             gef_print(freemap)
+
+def parse_zval_type(type):
+    t = type & 0xff
+    typearr = [
+        'undefined', 'null', 'false', 'true'
+        'long', 'double', 'string', 'array',
+        'object', 'resource', 'reference', 'constant_ast',
+        'indirect', 'ptr', 'alias_ptr', 'error'
+    ]
+    return typearr[t]
+
+@register
+class ZendZval(GenericCommand):
+    _cmdline_ = "zval"
+    _syntax_ = f"{_cmdline_} zval pointer"
+
+    def __init__(self) -> None:
+        super().__init__(self._cmdline_, gdb.COMMAND_SUPPORT, gdb.COMPLETE_NONE, False)
+        return
+
+    @only_if_gdb_running
+    @parse_arguments({"address": ""}, {})
+    def do_invoke(self, _: list[str], **kwargs: Any) -> None:
+        args : argparse.Namespace = kwargs["arguments"]
+        ptr = parse_address(args.address)
+        value = u64(gef.memory.read(ptr, 0x8))
+        typeinfo = u32(gef.memory.read(ptr + 8, 0x4))
+        gef_print("[*] zval@"+hex(ptr))
+        gef_print("    => Value: "+hex(value))
+        gef_print("    => Type: "+parse_zval_type(typeinfo))
+        return
 
 @register
 class ZendHeap(GenericCommand):

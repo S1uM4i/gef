@@ -10756,6 +10756,39 @@ class ZendPageMap(GenericCommand):
                     freemap += "0"
             gef_print(freemap)
 
+@register
+class ZendHeap(GenericCommand):
+    _cmdline_ = "zheap"
+    _syntax_ = f"{_cmdline_} (chunk)"
+
+    def __init__(self) -> None:
+        super().__init__(prefix=True)
+        return
+
+    @only_if_gdb_running
+    def do_invoke(self, argv: list[str]) -> None:
+        self.usage()
+        return
+
+@register
+class ZendChunk(GenericCommand):
+    _cmdline_ = "zheap chunk"
+    _syntax_ = f"{_cmdline_} pointer"
+
+    def __init__(self) -> None:
+        super().__init__(self._cmdline_, gdb.COMMAND_SUPPORT, gdb.COMPLETE_NONE, False)
+        return
+
+    @only_if_gdb_running
+    @parse_arguments({"address": ""}, {})
+    def do_invoke(self, _: list[str], **kwargs: Any) -> None:
+        args : argparse.Namespace = kwargs["arguments"]
+        ptr = parse_address(args.address)
+        alignment = (2 * 1024 * 1024)
+        chunk_ptr = (((ptr)) & ~((alignment) - 1))
+        gef_print(f"Chunk: {hex(chunk_ptr)}")
+        return
+
 class GefInstallExtraScriptCommand(gdb.Command):
     """`gef install` command: installs one or more scripts from the `gef-extras` script repo. Note that the command
     doesn't check for external dependencies the script(s) might require."""

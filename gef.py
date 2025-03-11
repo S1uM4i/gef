@@ -10747,6 +10747,7 @@ class ZendPageMap(GenericCommand):
         freemap_addr = parse_address("&((*alloc_globals.mm_heap).main_chunk)->free_map")
         mainchunk_addr = parse_address("(*alloc_globals.mm_heap).main_chunk")
         pagemap_addr = chunk_addr+(freemap_addr - mainchunk_addr)
+        chunk_freemap = ""
         for i in range(8):
             pmap = u64(gef.memory.read(pagemap_addr + i * 8, 0x8))
             freemap = ""
@@ -10756,12 +10757,25 @@ class ZendPageMap(GenericCommand):
                     freemap += "1"
                 else:
                     freemap += "0"
+            chunk_freemap += freemap
             gef_print(freemap)
+        gef_print("Free pages: ")
+        i = 0
+        while i < len(chunk_freemap):
+            if chunk_freemap[i] == "0":
+                # find next 1
+                j = i
+                while j < len(chunk_freemap) and chunk_freemap[j] == "0":
+                    j += 1
+                gef_print(f"Pages {i} - {j-1}")
+                i = j
+            i += 1
+        return
 
-def parse_zval_type(type):
-    t = type & 0xff
+def parse_zval_type(typeinfo):
+    t = typeinfo & 0xff
     typearr = [
-        'undefined', 'null', 'false', 'true'
+        'undefined', 'null', 'false', 'true',
         'long', 'double', 'string', 'array',
         'object', 'resource', 'reference', 'constant_ast',
         'indirect', 'ptr', 'alias_ptr', 'error'

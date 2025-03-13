@@ -10833,7 +10833,7 @@ class ZendChunk(GenericCommand):
         ptr = parse_address(args.address)
         alignment = (2 * 1024 * 1024)
         chunk_ptr = (((ptr)) & ~((alignment) - 1))
-        gef_print(f"Chunk: {hex(chunk_ptr)}")
+        info(f"Chunk: {hex(chunk_ptr)}")
         return
 
 class GefInstallExtraScriptCommand(gdb.Command):

@@ -10767,7 +10767,7 @@ class ZendPageMap(GenericCommand):
                 j = i
                 while j < len(chunk_freemap) and chunk_freemap[j] == "0":
                     j += 1
-                gef_print(f"Pages {i} - {j-1}")
+                info(f"Pages {i} - {j-1}: {j - i} pages, starts from {hex(i * 0x1000 + chunk_addr)}")
                 i = j
             i += 1
         return

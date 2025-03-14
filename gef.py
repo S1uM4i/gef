@@ -10806,7 +10806,7 @@ class ZendZval(GenericCommand):
 @register
 class ZendHeap(GenericCommand):
     _cmdline_ = "zheap"
-    _syntax_ = f"{_cmdline_} (chunk)"
+    _syntax_ = f"{_cmdline_} (chunk|bin-index)"
 
     def __init__(self) -> None:
         super().__init__(prefix=True)
@@ -10835,6 +10835,31 @@ class ZendChunk(GenericCommand):
         chunk_ptr = (((ptr)) & ~((alignment) - 1))
         info(f"Chunk: {hex(chunk_ptr)}")
         return
+
+@register
+class ZendChunk(GenericCommand):
+    _cmdline_ = "zheap bin-index"
+    _syntax_ = f"{_cmdline_} index"
+
+    def __init__(self) -> None:
+        super().__init__(self._cmdline_, gdb.COMMAND_SUPPORT, gdb.COMPLETE_NONE, False)
+        return
+
+    @only_if_gdb_running
+    @parse_arguments({"address": ""}, {})
+    def do_invoke(self, _: list[str], **kwargs: Any) -> None:
+        args : argparse.Namespace = kwargs["arguments"]
+        index = parse_address(args.address)
+        freeslot = parse_address(" &(alloc_globals.mm_heap->free_slot)")
+        slotentry = freeslot + index * 8
+        addr = u64(gef.memory.read(slotentry, 0x8))
+        cnt = 0
+        while addr != 0:
+            cnt += 1
+            addr = u64(gef.memory.read(addr, 0x8))
+        gef_print(f"slot[{index}]: {cnt} slots")
+        return
+
 
 class GefInstallExtraScriptCommand(gdb.Command):
     """`gef install` command: installs one or more scripts from the `gef-extras` script repo. Note that the command
